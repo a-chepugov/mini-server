@@ -16,7 +16,7 @@ describe("Server Core", () => {
 	it("start method initializes server", () => {
 		let counter = 0;
 		const instance = new Testee((): any => undefined);
-
+		instance.server.unref();
 		return new Promise((resolve) => instance.start(() => resolve(counter++)))
 			.then(() => expect(counter).to.be.equal(1))
 	});
@@ -25,7 +25,7 @@ describe("Server Core", () => {
 		const instance = new Testee((): any => undefined);
 		const host = '127.0.0.' + (Math.ceil(Math.random() * 254));
 		instance.host(host);
-
+		instance.server.unref();
 		return new Promise((resolve) => instance.start(resolve))
 			.then(() => {
 				const address = instance.server.address() as net.AddressInfo;
@@ -35,6 +35,7 @@ describe("Server Core", () => {
 
 	it("`port` method sets port to listen", () => {
 		const instance = new Testee((): any => undefined);
+		instance.server.unref();
 		return port.get()
 			.then((port: number) => {
 				if (port) {
@@ -53,6 +54,7 @@ describe("Server Core", () => {
 	it("`on` method sets host and port to listen", () => {
 		const instance = new Testee((): any => undefined);
 		const host = '127.0.0.' + (Math.ceil(Math.random() * 254));
+		instance.server.unref();
 		return port.get()
 			.then((port: number) => {
 				if (port) {
@@ -77,6 +79,7 @@ describe("Server Core", () => {
 		new server.Core((request: any, response: any) => response.end('online'))
 			.on(HOST, PORT)
 			.start(() => console.info(`Server started on http://${HOST}:${PORT} at ${new Date().toISOString()}`))
+			.server.unref();
 	});
 
 })
