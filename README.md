@@ -84,6 +84,68 @@ Context is frozen. It's IMPOSSIBLE to modify it after creation. You should use s
 Another way to handle connection is to pass data from listener to listener in handler chain:
 listener second arguments is previous listener result.
 
+#### Context methods
+
+##### parse
+Context contains method `parse` to convert request stream to another format
+
+Available formats:
+- base (returns string)
+- JSON
+
+```js
+server
+    .create()
+    .use((ctx) =>
+        ctx
+            .parse('json')
+            .then((response) => console.log(response))
+    )
+```
+
+Or using static method
+
+```js
+server
+    .create()
+    .use(server.Context.parse('json'))
+    .use((ctx, input) => console.log(input))
+```
+
+##### send
+Context contains method `send` to pass data to response stream
+
+Available formats:
+- string (useful for string or buffer)
+- JSON
+- stream
+- stringable (useful for objects with `toString` method)
+
+```js
+server
+    .create()
+    .use((ctx) =>
+        ctx.send({a: 1}, 'json')
+    )
+```
+
+Or using static method
+
+```js
+server
+    .create()
+    .use(() => ({a: 1}))
+    .use(server.Context.send('json'))
+```
+
+##### Custom formats
+It can be useful to add custom format to context parser or sender
+
+```js
+const unicornSender = {send: (response, unicorn) => response.end(unicorn.name)}
+server.Sender.register('unicorn', unicornSender)
+```
+
 ### Error interceptor
 
 It's possible to set custom function to handle errors in that occurs during request handling
