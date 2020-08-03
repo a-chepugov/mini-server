@@ -1,14 +1,14 @@
 import {IncomingMessage, ServerResponse, STATUS_CODES} from "http";
 
-import {RequestListener} from "./RequestListener";
+import {RequestListener} from "../RequestListener";
 
-import {Context} from "./Context";
+import {Context} from "../Context";
 
-export {Context} from "./Context";
+export {Context} from "../Context";
 
-import {ContextListener} from "./ContextListener";
+import {ContextListener} from "../ContextListener";
 
-export {ContextListener} from "./ContextListener";
+export {ContextListener} from "../ContextListener";
 
 export class Controller {
 	protected readonly _listeners: Set<ContextListener>;
@@ -50,7 +50,10 @@ export class Controller {
 
 		this._bundle = (ctx: Context, initial: any) =>
 			folded(Object.freeze(ctx), initial)
-				.catch((error: any) => this._interceptor(ctx, error));
+				.then(
+					(result: any) => ctx.response.finished ? undefined : ctx.send(result),
+					(error: any) => this._interceptor(ctx, error)
+				);
 
 		return this;
 	}
