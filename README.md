@@ -6,10 +6,12 @@ Lightweight HTTP Server.
 ### Server
 - Creation of server instance on specific port and host
 ```js
+const Server = require('mini-server').default;
+
 const HOST = '127.0.0.1';
 const PORT = 3000;
 
-server
+Server
     .create()
     .on(HOST, PORT)
     .start(() => console.info(`Server started on http://${HOST}:${PORT} at ${new Date().toISOString()}`))
@@ -30,7 +32,7 @@ or
 - Add listeners into connection handler chain via `use` method
 ```js
 let counter = 0;
-server
+Server
     .create()
     .use(() => counter++)
     .use((ctx, input) => ctx.response.end((new Date()).toISOString()))
@@ -40,7 +42,7 @@ server
 ```js
 const listener = (ctx, input) => ctx.response.end(input);
 
-server
+Server
     .create()
     .use(listener)
     .unuse(listener)
@@ -51,7 +53,7 @@ It's possible to add or remove listeners in any moment
 
 - Every listener has ctx (Connection context) as first argument and previous listener result as second argument
 ```js
-server
+Server
     .create()
     .use(() => new Date())
     .use((ctx, input) => ctx.response.end(input.toISOString()))
@@ -74,7 +76,7 @@ const stateInitializer = (request, response) => {
     return {id};
 }
 
-server
+Server
     .create()
     .state(stateInitializer)
     .use((ctx) => ctx.state.id.length === LENGTH)
@@ -94,7 +96,7 @@ Available formats:
 - JSON
 
 ```js
-server
+Server
     .create()
     .use((ctx) =>
         ctx
@@ -106,9 +108,11 @@ server
 Or using static method
 
 ```js
-server
+const {Context} = require('mini-server');
+
+Server
     .create()
-    .use(server.Context.parse('json'))
+    .use(Context.parse('json'))
     .use((ctx, input) => console.log(input))
 ```
 
@@ -122,7 +126,7 @@ Available formats:
 - stringable (useful for objects with `toString` method)
 
 ```js
-server
+Server
     .create()
     .use((ctx) =>
         ctx.send({a: 1}, 'json')
@@ -132,18 +136,21 @@ server
 Or using static method
 
 ```js
-server
+const {Context} = require('mini-server');
+
+Server
     .create()
     .use(() => ({a: 1}))
-    .use(server.Context.send('json'))
+    .use(Context.send('json'))
 ```
 
 ##### Custom formats
 It can be useful to add custom format to context parser or sender
 
 ```js
+const {Sender} = require('mini-server');
 const unicornSender = {send: (response, unicorn) => response.end(unicorn.name)}
-server.Sender.register('unicorn', unicornSender)
+Sender.register('unicorn', unicornSender)
 ```
 
 ### Error interceptor
@@ -151,7 +158,7 @@ server.Sender.register('unicorn', unicornSender)
 It's possible to set custom function to handle errors in that occurs during request handling
 
 ```js
-server
+Server
     .create()
     .interceptor((cxt, error) => {
         if (!ctx.response.finished) {
@@ -166,16 +173,17 @@ server
 
 ### Server core
 ```js
+const {Core} = require('mini-server');
 const HOST = '127.0.0.1';
 const PORT = 3000;
-new server.Core((request, response) => response.end('online'))
+new Server.Core((request, response) => response.end('online'))
     .on(HOST, PORT)
     .start(() => console.info(`Server started on http://${HOST}:${PORT} at ${new Date().toISOString()}`))
 ```
 
 - It's possible to work with original http server entity via `server` property of instance
 ```js
-const instance = server.create();
+const instance = Server.create();
 instance.server; // http.Server
 ```
 
