@@ -41,6 +41,7 @@ server
 const listener = (ctx, input) => ctx.response.end(input);
 
 server
+    .create()
     .use(listener)
     .unuse(listener)
 ```
@@ -51,6 +52,7 @@ It's possible to add or remove listeners in any moment
 - Every listener has ctx (Connection context) as first argument and previous listener result as second argument
 ```js
 server
+    .create()
     .use(() => new Date())
     .use((ctx, input) => ctx.response.end(input.toISOString()))
 ```
@@ -73,6 +75,7 @@ const stateInitializer = (request, response) => {
 }
 
 server
+    .create()
     .state(stateInitializer)
     .use((ctx) => ctx.state.id.length === LENGTH)
 ```
@@ -87,6 +90,7 @@ It's possible to set custom function to handle errors in that occurs during requ
 
 ```js
 server
+    .create()
     .interceptor((cxt, error) => {
         if (!ctx.response.finished) {
             ctx.response.end();
