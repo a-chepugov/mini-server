@@ -81,6 +81,23 @@ Context is frozen. It's IMPOSSIBLE to modify it after creation. You should use s
 Another way to handle connection is to pass data from listener to listener in handler chain:
 listener second arguments is previous listener result.
 
+### Error interceptor
+
+It's possible to set custom function to handle errors in that occurs during request handling
+
+```js
+server
+    .interceptor((cxt, error) => {
+        if (!ctx.response.finished) {
+            ctx.response.end();
+        }
+        console.error(error);
+    })
+    .use((ctx) => {
+        throw new Error('My error');
+    })
+```
+
 ### Server core
 ```js
 const HOST = '127.0.0.1';

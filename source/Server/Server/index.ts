@@ -47,6 +47,14 @@ export class Server extends Core {
 		return this;
 	};
 
+	/**
+	 * @description sets error handler for connection handler chain
+	 */
+	interceptor = (interceptor: (ctx: Context, error: any) => void) => {
+		this._controller.interceptor(interceptor);
+		return this;
+	}
+
 }
 
 export default Server;

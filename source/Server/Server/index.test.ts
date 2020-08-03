@@ -151,6 +151,28 @@ describe("Server", () => {
 		});
 	});
 
+	it("interceptor set error handler for connection handler chain", () => {
+		const instance = Testee.create();
+
+		return new Promise((resolve, reject) => {
+			instance
+				.interceptor((ctx: any, error: any) => {
+					ctx.response.end()
+					expect(error.message).to.be.equal('Test');
+				})
+				.use(() => {
+					throw new Error('Test');
+				})
+
+			return getFreePortAndStartServer(instance)
+				.then(({host, port}) =>
+					Request
+						.execute({hostname: host, port, method: 'GET', path: '/'})
+						.then(resolve)
+				)
+		});
+	});
+
 	it("example", () => {
 		const server = Testee;
 

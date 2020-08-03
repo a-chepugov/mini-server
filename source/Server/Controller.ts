@@ -14,9 +14,17 @@ export class Controller {
 	protected readonly _listeners: Set<ContextListener>;
 	protected _bundle: ContextListener;
 	protected _state: (request: IncomingMessage, response: ServerResponse) => any;
+	protected _interceptor: (ctx: any, error: any) => any;
 
 	constructor(listeners?: Iterable<ContextListener>) {
 		this._state = () => undefined;
+		this.interceptor((ctx: Context, error: { code?: number, reason?: string }) => {
+			if (!ctx.response.finished) {
+				ctx.response.statusCode = error && error.code ? error.code : 500;
+				ctx.response.end(error && error.reason ? error.reason : STATUS_CODES[ctx.response.statusCode]);
+			}
+			console.error(error);
+		})
 		this._listeners = new Set(listeners);
 		this.build();
 	}
@@ -42,6 +50,7 @@ export class Controller {
 
 		this._bundle = (ctx: Context, initial: any) =>
 			folded(Object.freeze(ctx), initial)
+				.catch((error: any) => this._interceptor(ctx, error));
 
 		return this;
 	}
@@ -69,6 +78,15 @@ export class Controller {
 			return this;
 		} else {
 			throw new Error('State setter must be a function');
+		}
+	}
+
+	interceptor = (interceptor: (ctx: Context, error: any) => any) => {
+		if (typeof interceptor === 'function') {
+			this._interceptor = interceptor;
+			return this;
+		} else {
+			throw new Error('Interceptor mush be a function');
 		}
 	}
 
