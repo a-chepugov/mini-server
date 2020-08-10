@@ -26,7 +26,7 @@ export class Controller {
 			console.error(error);
 		})
 		this._listeners = new Set(listeners);
-		this.build();
+		this._bundle = this.build(this._listeners.values());
 	}
 
 	static builder(listeners: Iterable<ContextListener>) {
@@ -45,17 +45,15 @@ export class Controller {
 			)
 	}
 
-	private build = () => {
-		const folded = Controller.builder(this._listeners.values());
+	private build = (listeners: Iterable<ContextListener>) => {
+		const folded = Controller.builder(listeners);
 
-		this._bundle = (ctx: Context, initial: any) =>
+		return (ctx: Context, initial: any) =>
 			folded(Object.freeze(ctx), initial)
 				.then(
 					(result: any) => ctx.response.finished ? undefined : ctx.send(result),
 					(error: any) => this._interceptor(ctx, error)
 				);
-
-		return this;
 	}
 
 	listen: RequestListener = (request, response) => {
@@ -67,12 +65,14 @@ export class Controller {
 
 	register = (listener: ContextListener) => {
 		this._listeners.add(listener);
-		return this.build();
+		this._bundle = this.build(this._listeners.values());
+		return this;
 	}
 
 	unregister = (listener: ContextListener) => {
 		this._listeners.delete(listener);
-		return this.build();
+		this._bundle = this.build(this._listeners.values());
+		return this;
 	}
 
 	state = (setter: (request: IncomingMessage, response: ServerResponse) => any) => {
